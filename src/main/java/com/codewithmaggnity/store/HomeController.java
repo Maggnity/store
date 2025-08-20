@@ -1,3 +1,4 @@
+package com.codewithmaggnity.store;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
