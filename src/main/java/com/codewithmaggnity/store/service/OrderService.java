@@ -1,6 +1,8 @@
-package com.codewithmaggnity.store;
+package com.codewithmaggnity.store.service;
 
 import org.springframework.stereotype.Component;
+
+import com.codewithmaggnity.store.service.Payment.PaymentService;
 
 @Component
 public class OrderService {

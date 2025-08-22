@@ -1,4 +1,4 @@
-package com.codewithmaggnity.store;
+package com.codewithmaggnity.store.service.Payment;
 
 public class StripePaymentService implements PaymentService {
     public void processPayment(double amount) {

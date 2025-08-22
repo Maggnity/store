@@ -1,14 +1,110 @@
 <!DOCTYPE html>
-
-<html lang="en">
+<html lang="pt-BR">
     <head>
         <meta charset="UTF-8" />
-        <title>Hello World</title>
+        <title>Menu</title>
+        <link
+            rel="stylesheet"
+            href="./index.css"
+        />
     </head>
-
-
     <body>
-        <h1>Hello World</h1>
-        <h1>Hello World</h1>
+        <section class="menu">
+            <h3>Menu</h3>
+            <ul id="menu-list"></ul>
+        </section>
+
+        <section class="ordem">
+            <h3>Ordem</h3>
+            <ul id="ordem-list"></ul>
+            <div class="total">
+                Total: R$ <span id="total-value">0.00</span>
+            </div>
+            <button id="finalizar-btn">Finalizar Pedido</button>
+        </section>
+
+        <script>
+            const menuList = document.getElementById('menu-list');
+            const ordemList = document.getElementById('ordem-list');
+            const totalValue = document.getElementById('total-value');
+            const finalizarBtn = document.getElementById('finalizar-btn');
+
+            let total = 0;
+
+            // Carregar pratos do backend
+            fetch('http://localhost:8080/api/pratos')
+                .then((res) => res.json())
+                .then((pratos) => {
+                    pratos.forEach((prato) => {
+                        const li = document.createElement('li');
+                        li.classList.add('prato-card');
+                        li.innerHTML = `
+            <div>
+              <h4>${prato.nome}</h4>
+              <ul>${prato.itens.map((item) => `<li>${item}</li>`).join('')}</ul>
+              <div class="preco">Preço R$ ${prato.preco.toFixed(2)}</div>
+              <button>Adicionar</button>
+            </div>
+          `;
+
+                        // Evento do botão
+                        li.querySelector('button').addEventListener(
+                            'click',
+                            () => {
+                                adicionarPedido(prato);
+                            }
+                        );
+
+                        menuList.appendChild(li);
+                    });
+                });
+
+            // Adicionar pedido no backend e renderizar na lista
+            function adicionarPedido(prato) {
+                fetch('http://localhost:8080/api/pedido', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(prato),
+                })
+                    .then((res) => res.json())
+                    .then((resp) => {
+                        const li = document.createElement('li');
+                        li.textContent = `${
+                            prato.nome
+                        } - R$ ${prato.preco.toFixed(2)}`;
+                        ordemList.appendChild(li);
+
+                        // Atualizar total
+                        total += prato.preco;
+                        totalValue.textContent = total.toFixed(2);
+                    });
+            }
+
+            // Finalizar pedido
+            finalizarBtn.addEventListener('click', () => {
+                fetch('http://localhost:8080/api/pedido/finalizar', {
+                    method: 'POST',
+                })
+                    .then(async (res) => {
+                        const data = await res.json();
+                        if (!res.ok) {
+                            alert(data.mensagem || 'Erro ao finalizar pedido!');
+                            return;
+                        }
+
+                        alert(
+                            `Pedido finalizado!\nTotal: R$ ${data.total.toFixed(
+                                2
+                            )}`
+                        );
+                        ordemList.innerHTML = '';
+                        total = 0;
+                        totalValue.textContent = '0.00';
+                    })
+                    .catch(() => {
+                        alert('Falha ao comunicar com o servidor.');
+                    });
+            });
+        </script>
     </body>
 </html>

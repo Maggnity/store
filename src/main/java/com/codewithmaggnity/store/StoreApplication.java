@@ -4,6 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 
+import com.codewithmaggnity.store.service.OrderService;
+import com.codewithmaggnity.store.service.Payment.PaypalPaymentService;
+
 @SpringBootApplication
 public class StoreApplication {
 

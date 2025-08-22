@@ -1,4 +1,4 @@
-package com.codewithmaggnity.store;
+package com.codewithmaggnity.store.service.Payment;
 
 import org.springframework.stereotype.Service;
 

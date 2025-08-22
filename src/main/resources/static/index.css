@@ -1,0 +1,119 @@
+/* Reset básico */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f9f9f9;
+    color: #333;
+}
+
+/* Seções principais */
+section {
+    margin: 20px auto;
+    padding: 20px;
+    max-width: 800px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Títulos */
+h3 {
+    margin-bottom: 15px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 5px;
+    color: #444;
+}
+
+/* Lista de pratos */
+#menu-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    list-style: none;
+    padding: 0;
+}
+
+/* Card de prato */
+.prato-card {
+    background: #fafafa;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #eee;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.prato-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.prato-card h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #222;
+}
+
+/* Ingredientes */
+.prato-card ul {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+/* Preço */
+.preco {
+    margin: 10px 0;
+    font-weight: bold;
+    color: #008000;
+}
+
+/* Botão */
+button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 8px;
+    background: #007bff;
+    color: white;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+/* Lista de pedidos */
+#ordem-list {
+    list-style: none;
+    padding: 0;
+}
+
+#ordem-list li {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.total {
+    margin-top: 15px;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #333;
+}
+
+#finalizar-btn {
+    margin-top: 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #28a745;
+    color: white;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#finalizar-btn:hover {
+    background: #218838;
+}
