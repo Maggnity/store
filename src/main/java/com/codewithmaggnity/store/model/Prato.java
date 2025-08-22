@@ -1,11 +1,19 @@
 package com.codewithmaggnity.store.model;
 
 import java.util.List;
+import jakarta.persistence.*;
+import java.util.List;
 
+@Entity
 public class Prato {
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private String nome;
     private double preco;
+    
+    @ElementCollection
     private List<String> itens;
 
     // Construtor padrão
@@ -13,7 +21,7 @@ public class Prato {
     }
 
     // Construtor com parâmetros
-    public Prato(int id, String nome, double preco, List<String> itens) {
+    public Prato(Long id, String nome, double preco, List<String> itens) {
         this.id = id;
         this.nome = nome;
         this.preco = preco;
@@ -21,11 +29,11 @@ public class Prato {
     }
 
     // Getters e Setters
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

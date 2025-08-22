@@ -29,7 +29,20 @@
             const totalValue = document.getElementById('total-value');
             const finalizarBtn = document.getElementById('finalizar-btn');
 
+            let pedidoId = null; // ID do pedido criado
             let total = 0;
+
+            async function criarPedido() {
+                const res = await fetch('http://localhost:8080/api/pedido', {
+                    method: 'POST',
+                });
+                if (!res.ok) {
+                    alert('Erro ao criar pedido!');
+                    return null;
+                }
+                const pedido = await res.json();
+                return pedido.id;
+            }
 
             // Carregar pratos do backend
             fetch('http://localhost:8080/api/pratos')
@@ -39,19 +52,31 @@
                         const li = document.createElement('li');
                         li.classList.add('prato-card');
                         li.innerHTML = `
-            <div>
-              <h4>${prato.nome}</h4>
-              <ul>${prato.itens.map((item) => `<li>${item}</li>`).join('')}</ul>
-              <div class="preco">Preço R$ ${prato.preco.toFixed(2)}</div>
-              <button>Adicionar</button>
-            </div>
-          `;
+                        <div>
+                            <h4>${prato.nome}</h4>
+                            <ul>${prato.itens
+                                .map((item) => `<li>${item}</li>`)
+                                .join('')}</ul>
+                            <div class="preco">Preço R$ ${prato.preco.toFixed(
+                                2
+                            )}</div>
+                            <button>Adicionar</button>
+                        </div>
+                    `;
 
-                        // Evento do botão
                         li.querySelector('button').addEventListener(
                             'click',
-                            () => {
-                                adicionarPedido(prato);
+                            async () => {
+                                if (!pedidoId) {
+                                    pedidoId = await criarPedido(prato);
+                                    if (!pedidoId) return;
+                                }
+
+                                adicionarPedido(
+                                    prato.id,
+                                    prato.nome,
+                                    prato.preco
+                                );
                             }
                         );
 
@@ -59,32 +84,44 @@
                     });
                 });
 
-            // Adicionar pedido no backend e renderizar na lista
-            function adicionarPedido(prato) {
-                fetch('http://localhost:8080/api/pedido', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(prato),
-                })
+            // Adicionar prato ao pedido
+            function adicionarPedido(pratoId, nome, preco) {
+                if (!pedidoId) {
+                    // Cria um pedido inicial (backend cria automaticamente)
+                    pedidoId = Date.now(); // ID temporário, backend real gera o ID
+                }
+
+                fetch(
+                    `http://localhost:8080/api/pedido/${pedidoId}/add/${pratoId}`,
+                    {
+                        method: 'POST',
+                    }
+                )
                     .then((res) => res.json())
-                    .then((resp) => {
+                    .then(() => {
                         const li = document.createElement('li');
-                        li.textContent = `${
-                            prato.nome
-                        } - R$ ${prato.preco.toFixed(2)}`;
+                        li.textContent = `${nome} - R$ ${preco.toFixed(2)}`;
                         ordemList.appendChild(li);
 
-                        // Atualizar total
-                        total += prato.preco;
+                        total += preco;
                         totalValue.textContent = total.toFixed(2);
-                    });
+                    })
+                    .catch(() => alert('Erro ao adicionar prato'));
             }
 
             // Finalizar pedido
             finalizarBtn.addEventListener('click', () => {
-                fetch('http://localhost:8080/api/pedido/finalizar', {
-                    method: 'POST',
-                })
+                if (!pedidoId || ordemList.children.length === 0) {
+                    alert('Não há itens no pedido.');
+                    return;
+                }
+
+                fetch(
+                    `http://localhost:8080/api/pedido/${pedidoId}/finalizar`,
+                    {
+                        method: 'POST',
+                    }
+                )
                     .then(async (res) => {
                         const data = await res.json();
                         if (!res.ok) {
@@ -100,6 +137,7 @@
                         ordemList.innerHTML = '';
                         total = 0;
                         totalValue.textContent = '0.00';
+                        pedidoId = null;
                     })
                     .catch(() => {
                         alert('Falha ao comunicar com o servidor.');
