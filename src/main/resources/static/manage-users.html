@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Gerenciamento de Usuários</title>
+        <link
+            rel="stylesheet"
+            href="./index.css"
+        />
+    </head>
+    <body>
+        <h1>Gerenciar Usuários</h1>
+
+        <!-- Formulário para adicionar/editar -->
+        <form id="usuarioForm">
+            <input
+                type="hidden"
+                id="usuarioId"
+            />
+
+            <label>Username:</label>
+            <input
+                type="text"
+                id="username"
+                title="username"
+                required
+            />
+
+            <label>Password:</label>
+            <input
+                type="password"
+                id="password"
+                title="password"
+            />
+
+            <label>Role:</label>
+            <select
+                id="role"
+                title="role"
+            >
+                <option value="USER">USER</option>
+                <option value="ADMIN">ADMIN</option>
+            </select>
+
+            <button type="submit">Salvar</button>
+        </form>
+
+        <hr />
+
+        <h2>Lista de Usuários</h2>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="usuariosTable"></tbody>
+        </table>
+
+        <script src="/js/usuarios.js"></script>
+    </body>
+
+    <script>
+        const apiUrl = 'http://localhost:8080/api/usuarios';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarUsuarios();
+
+            const form = document.getElementById('usuarioForm');
+            form.addEventListener('submit', salvarUsuario);
+        });
+
+        async function carregarUsuarios() {
+            const response = await fetch(apiUrl);
+            const usuarios = await response.json();
+
+            const tabela = document.getElementById('usuariosTable');
+            tabela.innerHTML = '';
+
+            usuarios.forEach((usuario) => {
+                const row = `
+      <tr>
+        <td>${usuario.id}</td>
+        <td>${usuario.username}</td>
+        <td>${usuario.role}</td>
+        <td>
+          <button onclick="editarUsuario(${usuario.id})">Editar</button>
+          <button onclick="deletarUsuario(${usuario.id})">Excluir</button>
+        </td>
+      </tr>
+    `;
+                tabela.innerHTML += row;
+            });
+        }
+        async function salvarUsuario(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('usuarioId').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+
+            const usuario = { username, password, role };
+
+            let method = 'POST';
+            let url = apiUrl;
+
+            if (id) {
+                method = 'PUT';
+                url = `${apiUrl}/${id}`;
+            }
+
+            await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(usuario),
+            });
+
+            document.getElementById('usuarioForm').reset();
+            document.getElementById('usuarioId').value = '';
+            carregarUsuarios();
+        }
+
+        async function editarUsuario(id) {
+            const response = await fetch(`${apiUrl}/${id}`);
+            const usuario = await response.json();
+
+            document.getElementById('usuarioId').value = usuario.id;
+            document.getElementById('username').value = usuario.username;
+            document.getElementById('password').value = ''; // senha não volta
+            document.getElementById('role').value = usuario.role;
+        }
+
+        async function deletarUsuario(id) {
+            if (!confirm('Tem certeza que deseja excluir este usuário?'))
+                return;
+
+            await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+            carregarUsuarios();
+        }
+    </script>
+</html>
