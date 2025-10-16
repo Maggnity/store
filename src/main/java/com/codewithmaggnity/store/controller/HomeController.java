@@ -8,10 +8,17 @@ public class HomeController {
 
     @RequestMapping("/")
     public String index() {
-        return "index.html";
+        System.out.println("chamando terra");
+        return "index";
     }
+
     @RequestMapping("/login")
     public String login() {
-        return "login.html";
+        return "login";
+    }
+
+    @RequestMapping("/gerenciar-usuarios")
+    public String criarUsuario() {
+        return "manage-users";
     }
 }

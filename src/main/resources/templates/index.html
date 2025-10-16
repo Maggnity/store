@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Menu</title>
+        <link
+            rel="stylesheet"
+            href="./index.css"
+        />
+    </head>
+    <body>
+        <section class="menu">
+            <h3>Menu</h3>
+            <ul id="menu-list"></ul>
+        </section>
+
+        <section class="ordem">
+            <h3>Ordem</h3>
+            <ul id="ordem-list"></ul>
+            <div class="total">
+                Total: R$ <span id="total-value">0.00</span>
+            </div>
+            <button id="finalizar-btn">Finalizar Pedido</button>
+        </section>
+
+        <script>
+            const menuList = document.getElementById('menu-list');
+            const ordemList = document.getElementById('ordem-list');
+            const totalValue = document.getElementById('total-value');
+            const finalizarBtn = document.getElementById('finalizar-btn');
+
+            let pedidoId = null; // ID do pedido criado
+            let total = 0;
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = '/login';
+            }
+
+            console.log({token})
+
+            const headers = {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            };
+
+            async function criarPedido() {
+                const res = await fetch('http://localhost:8080/api/pedido', {
+                    method: 'POST',
+                    headers
+                });
+                if (!res.ok) {
+                    alert('Erro ao criar pedido!');
+                    return null;
+                }
+                const pedido = await res.json();
+                return pedido.id;
+            }
+
+            // Carregar pratos do backend
+            fetch('http://localhost:8080/api/pratos', {
+                headers
+            })
+                .then((res) => res.json())
+                .then((pratos) => {
+                    pratos.forEach((prato) => {
+                        const li = document.createElement('li');
+                        li.classList.add('prato-card');
+                        li.innerHTML = `
+                        <div>
+                            <h4>${prato.nome}</h4>
+                            <ul>${prato.itens
+                                .map((item) => `<li>${item}</li>`)
+                                .join('')}</ul>
+                            <div class="preco">Preço R$ ${prato.preco.toFixed(
+                                2
+                            )}</div>
+                            <button>Adicionar</button>
+                        </div>
+                    `;
+
+                        li.querySelector('button').addEventListener(
+                            'click',
+                            async () => {
+                                if (!pedidoId) {
+                                    pedidoId = await criarPedido(prato);
+                                    if (!pedidoId) return;
+                                }
+
+                                adicionarPedido(
+                                    prato.id,
+                                    prato.nome,
+                                    prato.preco
+                                );
+                            }
+                        );
+
+                        menuList.appendChild(li);
+                    });
+                });
+
+            // Adicionar prato ao pedido
+            function adicionarPedido(pratoId, nome, preco) {
+                if (!pedidoId) {
+                    // Cria um pedido inicial (backend cria automaticamente)
+                    pedidoId = Date.now(); // ID temporário, backend real gera o ID
+                }
+
+                fetch(
+                    `http://localhost:8080/api/pedido/${pedidoId}/add/${pratoId}`,
+                    {
+                        method: 'POST',
+                        headers
+                    }
+                )
+                    .then((res) => res.json())
+                    .then(() => {
+                        const li = document.createElement('li');
+                        li.textContent = `${nome} - R$ ${preco.toFixed(2)}`;
+                        ordemList.appendChild(li);
+
+                        total += preco;
+                        totalValue.textContent = total.toFixed(2);
+                    })
+                    .catch(() => alert('Erro ao adicionar prato'));
+            }
+
+            // Finalizar pedido
+            finalizarBtn.addEventListener('click', () => {
+                if (!pedidoId || ordemList.children.length === 0) {
+                    alert('Não há itens no pedido.');
+                    return;
+                }
+
+                fetch(
+                    `http://localhost:8080/api/pedido/${pedidoId}/finalizar`,
+                    {
+                        method: 'POST',
+                        headers
+                    }
+                )
+                    .then(async (res) => {
+                        const data = await res.json();
+                        if (!res.ok) {
+                            alert(data.mensagem || 'Erro ao finalizar pedido!');
+                            return;
+                        }
+
+                        alert(
+                            `Pedido finalizado!\nTotal: R$ ${data.total.toFixed(
+                                2
+                            )}`
+                        );
+                        ordemList.innerHTML = '';
+                        total = 0;
+                        totalValue.textContent = '0.00';
+                        pedidoId = null;
+                    })
+                    .catch(() => {
+                        alert('Falha ao comunicar com o servidor.');
+                    });
+            });
+        </script>
+    </body>
+</html>

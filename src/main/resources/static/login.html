@@ -11,17 +11,42 @@
     <body>
         <section class="login">
             <h3>Login</h3>
-            <input
-                type="text"
-                id="username"
-                placeholder="Usuário"
-            />
-            <input
-                type="password"
-                id="password"
-                placeholder="Senha"
-            />
-            <button id="login-btn">Entrar</button>
+
+            <!-- Form que o Spring Security reconhece -->
+            <form
+                th:action="@{/login}"
+                method="post"
+            >
+                <div>
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Usuário"
+                        required
+                    />
+                </div>
+                <div>
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Senha"
+                        required
+                    />
+                </div>
+                <div>
+                    <button type="submit">Entrar</button>
+                </div>
+            </form>
+
+            <!-- Exibe erro de login se ?error=true -->
+            <div th:if="${param.error}">
+                <p style="color: red">Usuário ou senha inválidos</p>
+            </div>
+
+            <!-- Exibe mensagem de logout se ?logout=true -->
+            <div th:if="${param.logout}">
+                <p style="color: green">Logout realizado com sucesso</p>
+            </div>
         </section>
 
         <script>
@@ -51,7 +76,7 @@
                     token = data.token;
                     localStorage.setItem('token', token);
 
-                    alert('Login realizado com sucesso!');
+                    // alert('Login realizado com sucesso!');
                 });
 
             // Exemplo de fetch autenticado
